@@ -1,33 +1,7 @@
 {
   "1": {
     "inputs": {
-      "per_batch": 1,
-      "upscale_model": [
-        "5",
-        0
-      ],
-      "images": [
-        "8",
-        0
-      ]
-    },
-    "class_type": "ImageUpscaleWithModelBatched",
-    "_meta": {
-      "title": "Image Upscale With Model Batched"
-    }
-  },
-  "5": {
-    "inputs": {
-      "model_name": "2x-AnimeSharpV4_Fast_RCAN_PU.safetensors"
-    },
-    "class_type": "UpscaleModelLoader",
-    "_meta": {
-      "title": "업스케일 모델 로드"
-    }
-  },
-  "8": {
-    "inputs": {
-      "video": "wan22_result_6hoek8kzu8r.mp4",
+      "video": "3e82885a05005e4c14850729d4c19aa7b4c096c008869c0f4a910c0d7a73695e.mp4",
       "force_rate": 0,
       "custom_width": 0,
       "custom_height": 0,
@@ -41,24 +15,25 @@
       "title": "Load Video (Upload) 🎥🅥🅗🅢"
     }
   },
-  "9": {
+  "2": {
     "inputs": {
-      "frame_rate": [
-        "12",
-        0
-      ],
+      "frame_rate": 30,
       "loop_count": 0,
-      "filename_prefix": "25-09-12/wan/25-09-12-FASTWAN",
-      "format": "video/h264-mp4",
+      "filename_prefix": "testupscale",
+      "format": "video/webm",
       "pix_fmt": "yuv420p",
-      "crf": 15,
+      "crf": 20,
       "save_metadata": true,
-      "trim_to_audio": true,
+      "trim_to_audio": false,
       "pingpong": false,
       "save_output": true,
       "images": [
-        "1",
+        "5",
         0
+      ],
+      "audio": [
+        "1",
+        2
       ]
     },
     "class_type": "VHS_VideoCombine",
@@ -66,42 +41,43 @@
       "title": "Video Combine 🎥🅥🅗🅢"
     }
   },
-  "12": {
+  "3": {
     "inputs": {
-      "video_info": [
-        "8",
-        3
-      ]
-    },
-    "class_type": "VHS_VideoInfo",
-    "_meta": {
-      "title": "Video Info 🎥🅥🅗🅢"
-    }
-  },
-  "15": {
-    "inputs": {
-      "operator": "*",
-      "a": [
-        "12",
+      "upscale_model": [
+        "4",
         0
       ],
-      "b": [
-        "16",
+      "image": [
+        "1",
         0
       ]
     },
-    "class_type": "LayerUtility: NumberCalculator",
+    "class_type": "ImageUpscaleWithModel",
     "_meta": {
-      "title": "LayerUtility: 숫자 계산기"
+      "title": "Upscale Image (using Model)"
     }
   },
-  "16": {
+  "4": {
     "inputs": {
-      "value": 2
+      "model_name": "RealESRGAN_x4plus.pth"
     },
-    "class_type": "PrimitiveInt",
+    "class_type": "UpscaleModelLoader",
     "_meta": {
-      "title": "정수"
+      "title": "Load Upscale Model"
+    }
+  },
+  "5": {
+    "inputs": {
+      "upscale_method": "lanczos",
+      "largest_size": 1920,
+      "image": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "ImageScaleToMaxDimension",
+    "_meta": {
+      "title": "ImageScaleToMaxDimension"
     }
   }
 }
