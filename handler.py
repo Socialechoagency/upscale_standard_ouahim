@@ -325,9 +325,9 @@ def handler(job):
         workflow_path = os.path.join(workflow_dir, "video_upscale_api.json")
         prompt = load_workflow(workflow_path)
         # 노드 21: LoadVideo에 비디오 경로 설정
-        prompt["21"]["inputs"]["file"] = os.path.basename(input_path)
+        prompt["1"]["inputs"]["file"] = os.path.basename(input_path)
         # 노드 10: SeedVR2VideoUpscaler에 resolution 설정
-        prompt["10"]["inputs"]["resolution"] = resolution
+        # prompt["10"]["inputs"]["resolution"] = resolution
     elif task_type == "video_upscale_and_interpolation":
         workflow_path = os.path.join(workflow_dir, "video_upscale_interpolation_api.json")
         prompt = load_workflow(workflow_path)
