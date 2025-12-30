@@ -15,17 +15,8 @@ RUN pip uninstall -y torch torchvision torchaudio || true && \
     pip install --no-cache-dir torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121
 
 
-# ---- Force torch.load(weights_only=False) in ComfyUI safe loader ----
-RUN python - << 'PY'
-import pathlib, re
-p = pathlib.Path("/ComfyUI/comfy/utils.py")
-t = p.read_text(encoding="utf-8")
-# Very targeted: if ComfyUI calls torch.load without weights_only, inject weights_only=False.
-# (If ComfyUI already sets weights_only=True somewhere, flip it to False.)
-t2 = t.replace("weights_only=True", "weights_only=False")
-p.write_text(t2, encoding="utf-8")
-print("Patched comfy/utils.py weights_only handling")
-PY
+# Force ComfyUI to not use weights_only=True (PyTorch 2.6 issue)
+RUN sed -i 's/weights_only=True/weights_only=False/g' /ComfyUI/comfy/utils.py || true
 
 # === Install system deps for model download ===
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -43,6 +34,10 @@ RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/Comfy-Org/ComfyUI-Manager.git && \
     cd ComfyUI-Manager && \
     pip install -r requirements.txt
+
+
+RUN pip uninstall -y torch torchvision torchaudio || true && \
+    pip install --no-cache-dir torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121
     
 #RUN cd /ComfyUI/custom_nodes && \
    # git clone https://github.com/Fannovel16/ComfyUI-Frame-Interpolation.git && \
