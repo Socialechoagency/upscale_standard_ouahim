@@ -14,6 +14,11 @@ RUN git clone https://github.com/comfyanonymous/ComfyUI.git && \
 RUN pip uninstall -y torch torchvision torchaudio || true && \
     pip install --no-cache-dir torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121
 
+# --- Disable sageattention (ABI mismatch with pinned torch) ---
+RUN pip uninstall -y sageattention || true
+
+# ComfyUI: don't crash if sageattention can't load
+RUN python -c "import pathlib,re; p=pathlib.Path('/ComfyUI/comfy/ldm/modules/attention.py'); t=p.read_text(encoding='utf-8'); t=re.sub(r'(\\n\\s*)raise e', r'\\1print(\"[patch] sageattention failed -> fallback\")\\1pass', t, count=1); p.write_text(t, encoding='utf-8')"
 
 # Force ComfyUI to not use weights_only=True (PyTorch 2.6 issue)
 RUN sed -i 's/weights_only=True/weights_only=False/g' /ComfyUI/comfy/utils.py || true
