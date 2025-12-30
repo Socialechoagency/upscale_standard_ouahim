@@ -35,11 +35,12 @@ RUN cd /ComfyUI/custom_nodes && \
     cd ComfyUI-VideoHelperSuite && \
     pip install -r requirements.txt
 
-# === RealESRGAN Upscale Model ===
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl && rm -rf /var/lib/apt/lists/*
+
 RUN mkdir -p /ComfyUI/models/upscale_models && \
-    wget -O /ComfyUI/models/upscale_models/RealESRGAN_x4plus.pth \
-    https://huggingface.co/xinntao/Real-ESRGAN/resolve/main/weights/RealESRGAN_x4plus.pth
-    
+    curl -L --retry 10 --retry-delay 2 --connect-timeout 20 --max-time 600 \
+    -o /ComfyUI/models/upscale_models/RealESRGAN_x4plus.pth \
+    "https://huggingface.co/xinntao/Real-ESRGAN/resolve/main/weights/RealESRGAN_x4plus.pth?download=true"
 WORKDIR /
 
 COPY . .
