@@ -1,7 +1,7 @@
 {
   "1": {
     "inputs": {
-      "video": "__file__",
+      "video": "__VIDEO__",
       "force_rate": 0,
       "custom_width": 0,
       "custom_height": 0,
