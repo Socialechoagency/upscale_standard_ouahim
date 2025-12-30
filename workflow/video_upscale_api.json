@@ -1,7 +1,7 @@
 {
   "1": {
     "inputs": {
-      "video": "3e82885a05005e4c14850729d4c19aa7b4c096c008869c0f4a910c0d7a73695e.mp4",
+      "video": "__file__",
       "force_rate": 0,
       "custom_width": 0,
       "custom_height": 0,
