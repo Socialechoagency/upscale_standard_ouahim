@@ -9,7 +9,7 @@ python /ComfyUI/main.py --listen --use-sage-attention &
 
 # Wait for ComfyUI to be ready
 echo "Waiting for ComfyUI to be ready..."
-max_wait=120  # 최대 2분 대기
+max_wait=600  # 최대 2분 대기
 wait_count=0
 while [ $wait_count -lt $max_wait ]; do
     if curl -s http://127.0.0.1:8188/ > /dev/null 2>&1; then
