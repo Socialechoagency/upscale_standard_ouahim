@@ -1,78 +1,51 @@
-# Use specific version of nvidia cuda image
-FROM wlsdml1114/multitalk-base:1.8 as runtime
+FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 
-RUN pip install -U "huggingface_hub[hf_transfer]"
-RUN pip install runpod websocket-client
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
 
-WORKDIR /
-
-RUN git clone https://github.com/comfyanonymous/ComfyUI.git && \
-    cd /ComfyUI && \
-    pip install -r requirements.txt
-
-# ---- Pin PyTorch (avoid PyTorch 2.6 weights_only behavior) ----
-RUN pip uninstall -y torch torchvision torchaudio || true && \
-    pip install --no-cache-dir torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121
-
-# --- Disable sageattention (ABI mismatch with pinned torch) ---
-RUN pip uninstall -y sageattention || true
-
-
-# Force ComfyUI to not use weights_only=True (PyTorch 2.6 issue)
-RUN sed -i 's/weights_only=True/weights_only=False/g' /ComfyUI/comfy/utils.py || true
-
-# === Install system deps for model download ===
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
+# ---------- System ----------
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    git \
+    ffmpeg \
     curl \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# === Download RealESRGAN model ===
-RUN mkdir -p /ComfyUI/models/upscale_models && \
-    curl -L --retry 10 --retry-delay 2 \
-    -o /ComfyUI/models/upscale_models/RealESRGAN_x4plus.pth \
-    "https://huggingface.co/xinntao/Real-ESRGAN/resolve/main/weights/RealESRGAN_x4plus.pth?download=true"
+# ---------- Python ----------
+RUN pip3 install --upgrade pip
 
-RUN cd /ComfyUI/custom_nodes && \
-    git clone https://github.com/Comfy-Org/ComfyUI-Manager.git && \
-    cd ComfyUI-Manager && \
-    pip install -r requirements.txt
-
-
-RUN pip uninstall -y torch torchvision torchaudio || true && \
-    pip install --no-cache-dir torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121
-    
-#RUN cd /ComfyUI/custom_nodes && \
-   # git clone https://github.com/Fannovel16/ComfyUI-Frame-Interpolation.git && \
-   # cd ComfyUI-Frame-Interpolation && \
-   # python install.py
-
-RUN cd /ComfyUI/custom_nodes && \
-    git clone https://github.com/chflame163/ComfyUI_LayerStyle.git && \
-    cd ComfyUI_LayerStyle && \
-    pip install -r requirements.txt
-
-RUN cd /ComfyUI/custom_nodes && \
-    git clone https://github.com/kijai/ComfyUI-KJNodes && \
-    cd ComfyUI-KJNodes && \
-    pip install -r requirements.txt
-
-RUN cd /ComfyUI/custom_nodes && \
-    git clone https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite && \
-    cd ComfyUI-VideoHelperSuite && \
-    pip install -r requirements.txt
-
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl && rm -rf /var/lib/apt/lists/*
-
-RUN mkdir -p /ComfyUI/models/upscale_models && \
-    curl -L --retry 10 --retry-delay 2 --connect-timeout 20 --max-time 600 \
-    -o /ComfyUI/models/upscale_models/RealESRGAN_x4plus.pth \
-    "https://huggingface.co/xinntao/Real-ESRGAN/resolve/main/weights/RealESRGAN_x4plus.pth?download=true"
+# ---------- ComfyUI ----------
 WORKDIR /
+RUN git clone https://github.com/comfyanonymous/ComfyUI.git
 
-COPY . .
-RUN mkdir -p /ComfyUI/user/default/ComfyUI-Manager
-COPY config.ini /ComfyUI/user/default/ComfyUI-Manager/config.ini
-RUN chmod +x /entrypoint.sh
+WORKDIR /ComfyUI
+RUN pip3 install -r requirements.txt
 
-CMD ["/entrypoint.sh"]
+# ---------- Torch (fixe Version, stabil) ----------
+RUN pip uninstall -y torch torchvision torchaudio || true && \
+    pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 \
+    --index-url https://download.pytorch.org/whl/cu121
+
+# ---------- Custom Nodes ----------
+WORKDIR /ComfyUI/custom_nodes
+RUN git clone https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git
+
+# ---------- RealESRGAN Model ----------
+RUN mkdir -p /ComfyUI/models/upscale_models && \
+    curl -L \
+    -o /ComfyUI/models/upscale_models/RealESRGAN_x4plus.pth \
+    https://huggingface.co/xinntao/Real-ESRGAN/resolve/main/weights/RealESRGAN_x4plus.pth
+
+# ---------- App Files ----------
+WORKDIR /
+COPY handler.py /handler.py
+COPY workflow /workflow
+
+# ---------- RunPod ----------
+RUN pip install runpod
+
+EXPOSE 8188
+
+CMD ["python3", "/handler.py"]
